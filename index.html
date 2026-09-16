@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rogers Res — Performance Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171C;
+    --ink-soft:#4B5160;
+    --subtle:#6B7280;
+    --faint:#9AA1AC;
+    --bg:#F1F3F6;
+    --surface:#FFFFFF;
+    --surface-2:#F8F9FB;
+    --border:#E2E5EA;
+    --border-strong:#CDD2DA;
+    --brand:#1E4B6B;
+    --brand-dark:#123350;
+    --brand-tint:#E7EEF3;
+    --brand-tint-2:#DCE7EE;
+    --green:#1E7A46;
+    --green-bg:#E5F4EA;
+    --green-border:#BFE3CC;
+    --yellow:#8A6100;
+    --yellow-bg:#FDF3D8;
+    --yellow-border:#F2DFA0;
+    --red:#B42318;
+    --red-bg:#FCEAE8;
+    --red-border:#F3C6C0;
+    --gray:#5B6270;
+    --gray-bg:#EDEFF2;
+    --gray-border:#DADEE4;
+    --radius-sm:6px;
+    --radius-md:10px;
+    --radius-lg:16px;
+    --shadow-card: 0 1px 2px rgba(20,23,28,0.04), 0 1px 1px rgba(20,23,28,0.03);
+    --font: 'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font);
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection{ background: var(--brand-tint-2); }
+
+  .wrap{max-width:1280px;margin:0 auto;padding:0 24px 80px;}
+
+  /* ---------- MASTHEAD ---------- */
+  header.masthead{
+    background: linear-gradient(180deg, var(--brand-dark) 0%, var(--brand) 100%);
+    color:#fff;
+    padding: 28px 0 26px;
+  }
+  .masthead-inner{
+    max-width:1280px;margin:0 auto;padding:0 24px;
+    display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap;
+  }
+  .brand-block{display:flex; align-items:center; gap:14px;}
+  .brand-mark{
+    width:44px;height:44px;border-radius:10px;
+    background: rgba(255,255,255,0.14);
+    border:1px solid rgba(255,255,255,0.22);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800; font-size:18px; letter-spacing:-0.02em;
+    flex-shrink:0;
+  }
+  .brand-text .campaign{
+    font-weight:800; font-size:22px; letter-spacing:-0.01em; line-height:1.15;
+  }
+  .brand-text .sub{
+    font-weight:500; font-size:13.5px; color:rgba(255,255,255,0.72); margin-top:2px;
+  }
+  .masthead-actions{ display:flex; align-items:center; gap:10px; }
+  .lang-toggle{
+    display:flex; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25);
+    border-radius:999px; padding:3px; gap:2px;
+  }
+  .lang-toggle button{
+    border:none; background:transparent; color:rgba(255,255,255,0.75);
+    font-family:var(--font); font-weight:700; font-size:12.5px; letter-spacing:0.02em;
+    padding:6px 13px; border-radius:999px; cursor:pointer; transition: all .15s ease;
+  }
+  .lang-toggle button.active{ background:#fff; color:var(--brand-dark); }
+
+  .week-pill{
+    font-size:12.5px; font-weight:600; color:rgba(255,255,255,0.85);
+    background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+    padding:6px 12px; border-radius:999px;
+  }
+
+  /* Hero KPI row */
+  .hero-kpis{
+    max-width:1280px;margin:22px auto 0;padding:0 24px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+  }
+  .kpi-card{
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16);
+    border-radius:var(--radius-md); padding:14px 16px;
+  }
+  .kpi-card .kpi-value{ font-size:26px; font-weight:800; color:#fff; letter-spacing:-0.01em; }
+  .kpi-card .kpi-label{ font-size:12px; font-weight:600; color:rgba(255,255,255,0.68); margin-top:2px; }
+
+  /* ---------- FILTER BAR ---------- */
+  .filterbar{
+    position:sticky; top:0; z-index:20;
+    background:var(--surface); border-bottom:1px solid var(--border);
+    box-shadow:0 1px 0 rgba(20,23,28,0.02);
+  }
+  .filterbar-inner{
+    max-width:1280px;margin:0 auto;padding:14px 24px;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  }
+  .segmented{
+    display:flex; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:3px; gap:2px;
+  }
+  .segmented button{
+    border:none; background:transparent; font-family:var(--font); cursor:pointer;
+    font-size:13px; font-weight:600; color:var(--ink-soft); padding:7px 13px; border-radius:8px;
+    white-space:nowrap;
+  }
+  .segmented button.active{ background:var(--brand); color:#fff; }
+  .filter-note{ font-size:12px; color:var(--faint); }
+
+  .chip-row{
+    display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;
+  }
+  .chip{
+    border:1px solid var(--border-strong); background:var(--surface);
+    padding:7px 14px; border-radius:999px; font-size:13px; font-weight:600;
+    color:var(--ink-soft); cursor:pointer; display:flex; align-items:center; gap:7px;
+    transition: all .12s ease;
+  }
+  .chip:hover{ border-color:var(--brand); color:var(--brand); }
+  .chip.active{ background:var(--brand); border-color:var(--brand); color:#fff; }
+  .chip .chip-dot{ width:7px;height:7px;border-radius:50%; background:currentColor; opacity:.55;}
+  .chip .chip-count{ opacity:.7; font-weight:700; }
+
+  /* ---------- SECTIONS ---------- */
+  section{ margin-top:36px; }
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; gap:12px; flex-wrap:wrap;}
+  .section-head h2{ font-size:19px; font-weight:800; margin:0; letter-spacing:-0.01em; }
+  .section-head .section-sub{ font-size:13px; color:var(--subtle); }
+
+  .banner{
+    background:var(--yellow-bg); border:1px solid var(--yellow-border); color:#6B4E00;
+    border-radius:var(--radius-md); padding:12px 16px; font-size:13px; line-height:1.5; margin-bottom:16px;
+  }
+  .banner strong{ color:#5A4000; }
+
+  /* ---------- OFFICE TABLE ---------- */
+  .table-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+    overflow-x:auto; overflow-y:hidden; box-shadow:var(--shadow-card);
+  }
+  table.office-table{ width:100%; min-width:1080px; border-collapse:collapse; font-size:13.5px; }
+  table.office-table thead th{
+    text-align:left; font-size:11.5px; font-weight:700; color:var(--faint);
+    padding:12px 16px; border-bottom:1px solid var(--border); white-space:nowrap;
+    letter-spacing:0.01em;
+  }
+  table.office-table thead th.num{ text-align:right; }
+  table.office-table thead th.sortable{ cursor:pointer; user-select:none; transition:color .12s ease; }
+  table.office-table thead th.sortable:hover{ color:var(--brand); }
+  table.office-table thead th.sortable .arrow{ display:inline-block; margin-left:4px; font-size:10px; opacity:0; transition:opacity .12s ease; }
+  table.office-table thead th.sortable.active{ color:var(--brand); }
+  table.office-table thead th.sortable.active .arrow{ opacity:1; }
+  table.office-table tbody td{
+    padding:13px 16px; border-bottom:1px solid var(--border); vertical-align:middle;
+  }
+  table.office-table tbody tr:last-child td{ border-bottom:none; }
+  table.office-table tbody tr{ cursor:pointer; transition:background .1s ease; }
+  table.office-table tbody tr:hover{ background:var(--surface-2); }
+  table.office-table td.num{ text-align:right; font-weight:600; }
+  .office-name-cell{ display:flex; flex-direction:column; white-space:nowrap; }
+  .office-name-cell .oname{ font-weight:700; color:var(--ink); }
+  .office-name-cell .oprov{ font-size:11.5px; color:var(--faint); font-weight:600; margin-top:1px;}
+
+  .metric-pill{
+    display:inline-flex; align-items:center; gap:6px; padding:3px 9px; border-radius:999px;
+    font-weight:700; font-size:12.5px;
+  }
+  .metric-pill.green{ background:var(--green-bg); color:var(--green); }
+  .metric-pill.yellow{ background:var(--yellow-bg); color:var(--yellow); }
+  .metric-pill.red{ background:var(--red-bg); color:var(--red); }
+  .metric-pill.gray{ background:var(--gray-bg); color:var(--gray); }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:7px;
+    font-weight:800; font-size:11px; letter-spacing:0.02em; white-space:nowrap;
+  }
+  .badge.green{ background:var(--green-bg); color:var(--green); border:1px solid var(--green-border);}
+  .badge.yellow{ background:var(--yellow-bg); color:var(--yellow); border:1px solid var(--yellow-border);}
+  .badge.red{ background:var(--red-bg); color:var(--red); border:1px solid var(--red-border);}
+  .badge.gray{ background:var(--gray-bg); color:var(--gray); border:1px solid var(--gray-border);}
+
+  .nodata-txt{ color:var(--faint); font-style:italic; font-size:12.5px; font-weight:500; }
+
+  /* ---------- REP GRID ---------- */
+  .rep-toolbar{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap;
+  }
+  .search-input{
+    border:1px solid var(--border-strong); background:var(--surface); border-radius:9px;
+    padding:9px 14px; font-family:var(--font); font-size:13.5px; width:260px; color:var(--ink);
+  }
+  .search-input:focus{ outline:2px solid var(--brand); outline-offset:1px; }
+  .sort-select{
+    border:1px solid var(--border-strong); background:var(--surface); border-radius:9px;
+    padding:9px 12px; font-family:var(--font); font-size:13px; font-weight:600; color:var(--ink-soft);
+  }
+
+  .rep-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:14px;
+  }
+  .rep-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+    padding:16px; box-shadow:var(--shadow-card); position:relative; overflow:hidden;
+  }
+  .rep-card::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+  }
+  .rep-card.b-green::before{ background:var(--green); }
+  .rep-card.b-yellow::before{ background:var(--yellow); }
+  .rep-card.b-red::before{ background:var(--red); }
+  .rep-card.b-gray::before{ background:var(--faint); }
+
+  .rep-card-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:12px;}
+  .rep-name{ font-weight:800; font-size:15px; letter-spacing:-0.005em; line-height:1.25;}
+  .rep-office{ font-size:12px; color:var(--subtle); font-weight:600; margin-top:2px;}
+
+  .rep-metrics{ display:grid; grid-template-columns:1fr 1fr; gap:9px 10px; margin-top:4px;}
+  .metric-box{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:8px 10px;
+  }
+  .metric-box .m-label{ font-size:10.5px; font-weight:700; color:var(--faint); text-transform:none; letter-spacing:0.01em;}
+  .metric-box .m-value{ font-size:15px; font-weight:800; margin-top:2px; }
+  .metric-box .m-value.green{ color:var(--green); }
+  .metric-box .m-value.yellow{ color:#8A6100; }
+  .metric-box .m-value.red{ color:var(--red); }
+  .metric-box .m-value.plain{ color:var(--ink); }
+  .metric-box .m-sub{ font-size:10.5px; color:var(--faint); font-weight:600; margin-top:1px;}
+
+  .rep-footer{
+    margin-top:11px; padding-top:11px; border-top:1px dashed var(--border);
+    display:flex; align-items:center; justify-content:space-between; font-size:12px;
+  }
+  .pay-value{ font-weight:800; font-size:14px; }
+  .productmix-tag{
+    font-size:11px; font-weight:600; color:var(--faint); background:var(--gray-bg);
+    padding:3px 8px; border-radius:6px;
+  }
+
+  footer.site-footer{
+    max-width:1280px;margin:40px auto 0;padding:20px 24px; border-top:1px solid var(--border);
+    font-size:12px; color:var(--faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media (max-width:900px){
+    .hero-kpis{ grid-template-columns:repeat(2,1fr); }
+    table.office-table{ font-size:12.5px; }
+  }
+  @media (max-width:560px){
+    .hero-kpis{ grid-template-columns:1fr 1fr; padding:0 16px; }
+    .wrap{ padding:0 16px 60px; }
+    .masthead-inner{ padding:0 16px; }
+    .filterbar-inner{ padding:12px 16px; }
+    .rep-grid{ grid-template-columns:1fr; }
+    .search-input{ width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand-block">
+      <div class="brand-mark">RR</div>
+      <div class="brand-text">
+        <div class="campaign" data-i18n="campaignTitle">Rogers Res</div>
+        <div class="sub" data-i18n="campaignSub">Scorecard</div>
+      </div>
+    </div>
+    <div class="masthead-actions">
+      <span class="week-pill" id="weekPill">Week of Sep 6–12, 2026</span>
+      <div class="lang-toggle">
+        <button id="langEnBtn" class="active">EN</button>
+        <button id="langFrBtn">FR</button>
+      </div>
+    </div>
+  </div>
+  <div class="hero-kpis" id="heroKpis"></div>
+</header>
+
+<div class="filterbar">
+  <div class="filterbar-inner">
+    <div class="segmented" id="dateSegment">
+      <button data-range="week" class="active" data-i18n="rangeWeek">Last Week</button>
+      <button data-range="month" data-i18n="rangeMonth">Last Month</button>
+      <button data-range="90d" data-i18n="range90">Last 90 Days</button>
+      <button data-range="all" data-i18n="rangeAll">All Time</button>
+      <button data-range="custom" data-i18n="rangeCustom">Custom Range</button>
+    </div>
+    <span class="filter-note" id="rangeNote" data-i18n="rangeNoteWeek">Showing Sep 6–12, 2026 — the only week of conversion data loaded so far.</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section id="officesSection">
+    <div class="section-head">
+      <h2 data-i18n="officeRankingsTitle">Office Rankings</h2>
+      <span class="section-sub" data-i18n="officeRankingsSub">Tap a row to filter the reps below to that office</span>
+    </div>
+    <div class="table-card">
+      <table class="office-table">
+        <thead>
+          <tr>
+            <th class="sortable" data-sort="office" data-i18n="colOffice">Office</th>
+            <th class="num sortable" data-sort="reps" data-i18n="colReps">Reps</th>
+            <th class="num sortable" data-sort="conv" data-i18n="colConv">Conversion %</th>
+            <th class="num sortable" data-sort="sales" data-i18n="colSales">Sales</th>
+            <th class="num sortable" data-sort="hrsday" data-i18n="colHrsDay">Avg Hours/Day</th>
+            <th class="num sortable" data-sort="cancel" data-i18n="colCancel">Cancel %</th>
+            <th class="num sortable" data-sort="disc" data-i18n="colDisc">Disconnect %</th>
+            <th class="num sortable" data-sort="pay" data-i18n="colPay">Pay</th>
+            <th class="num sortable" data-sort="avgpay" data-i18n="colAvgPay">Avg Rep Pay</th>
+            <th class="num sortable" data-sort="ownerprod" data-i18n="colOwnerProd">Owner Personal Production</th>
+          </tr>
+        </thead>
+        <tbody id="officeTbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="repsSection">
+    <div class="section-head">
+      <h2 data-i18n="repCardsTitle">Rep Performance</h2>
+      <span class="section-sub" id="repCountSub"></span>
+    </div>
+    <div class="chip-row" id="officeChips"></div>
+    <div class="rep-toolbar">
+      <input type="text" class="search-input" id="repSearch" data-i18n-ph="searchPlaceholder" placeholder="Search reps...">
+      <select class="sort-select" id="sortSelect">
+        <option value="conv_desc" data-i18n="sortConvDesc">Sort: Conversion % (high–low)</option>
+        <option value="sales_desc" data-i18n="sortSalesDesc">Sort: Sales (high–low)</option>
+        <option value="name_asc" data-i18n="sortNameAsc">Sort: Name (A–Z)</option>
+        <option value="pay_desc" data-i18n="sortPayDesc">Sort: Pay (high–low)</option>
+      </select>
+    </div>
+    <div class="rep-grid" id="repGrid"></div>
+  </section>
+
+  <footer class="site-footer">
+    <span data-i18n="footerLeft">Rogers Res · Cydcor Canada · Internal performance tool</span>
+    <span id="footerRight"></span>
+  </footer>
+</div>
+
+<script id="master-data" type="application/json">[{"office":"Bennet Shaju","rep":"Ishan Dave","sales_week":5,"field_hours_week":27.65,"days_worked":4,"unique_doors":228,"conv_sales":7,"conv_pct":0.03070175438596491,"activity_records":584,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":473.4,"cancel_pct":0.0,"disconnect_pct":0.020833333333333332},{"office":"Bennet Shaju","rep":"Nirmine Hamel","sales_week":3,"field_hours_week":28.32,"days_worked":5,"unique_doors":228,"conv_sales":3,"conv_pct":0.013157894736842105,"activity_records":468,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":412,"cancel_pct":0.0,"disconnect_pct":0.08125},{"office":"Bennet Shaju","rep":"Vaishnavi Sheel","sales_week":2,"field_hours_week":22.78,"days_worked":5,"unique_doors":272,"conv_sales":2,"conv_pct":0.007352941176470588,"activity_records":436,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":271,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Bennet Shaju","rep":"Tremaine White","sales_week":0,"field_hours_week":26.19,"days_worked":5,"unique_doors":256,"conv_sales":0,"conv_pct":0.0,"activity_records":460,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Bradley Mackenzie","rep":"Karlos Yung","sales_week":6,"field_hours_week":19.79,"days_worked":3,"unique_doors":46,"conv_sales":0,"conv_pct":0.0,"activity_records":100,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":533.8,"cancel_pct":0.08333333333333333,"disconnect_pct":0.125},{"office":"Bradley Mackenzie","rep":"Yusuf Sherif","sales_week":6,"field_hours_week":23.19,"days_worked":4,"unique_doors":139,"conv_sales":7,"conv_pct":0.050359712230215826,"activity_records":262,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":917,"cancel_pct":0.022727272727272728,"disconnect_pct":0.0},{"office":"Bradley Mackenzie","rep":"Mandeep Singh","sales_week":5,"field_hours_week":20.7,"days_worked":5,"unique_doors":143,"conv_sales":5,"conv_pct":0.03496503496503497,"activity_records":326,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":829.8,"cancel_pct":0.5,"disconnect_pct":0.0},{"office":"Bradley Mackenzie","rep":"Said Kulmiye","sales_week":5,"field_hours_week":29.55,"days_worked":5,"unique_doors":158,"conv_sales":6,"conv_pct":0.0379746835443038,"activity_records":464,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":851.6,"cancel_pct":0.02631578947368421,"disconnect_pct":0.09545454545454546},{"office":"Bradley Mackenzie","rep":"Bebang Leke","sales_week":4,"field_hours_week":30.26,"days_worked":5,"unique_doors":203,"conv_sales":5,"conv_pct":0.024630541871921183,"activity_records":589,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":127,"cancel_pct":0.07142857142857142,"disconnect_pct":0.15000000000000002},{"office":"Bradley Mackenzie","rep":"Mahdi Ease","sales_week":4,"field_hours_week":30.52,"days_worked":5,"unique_doors":150,"conv_sales":5,"conv_pct":0.03333333333333333,"activity_records":377,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Bradley Mackenzie","rep":"Nathaniel Tanasichuk","sales_week":4,"field_hours_week":15.43,"days_worked":3,"unique_doors":22,"conv_sales":3,"conv_pct":0.13636363636363635,"activity_records":26,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1123.4,"cancel_pct":0.0,"disconnect_pct":0.04310344827586207},{"office":"Bradley Mackenzie","rep":"Laver Anderson","sales_week":3,"field_hours_week":23.04,"days_worked":4,"unique_doors":152,"conv_sales":5,"conv_pct":0.03289473684210526,"activity_records":396,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":253,"cancel_pct":0.125,"disconnect_pct":0.3769230769230769},{"office":"Bradley Mackenzie","rep":"Kamryn Bowman","sales_week":2,"field_hours_week":28.65,"days_worked":5,"unique_doors":143,"conv_sales":2,"conv_pct":0.013986013986013986,"activity_records":397,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":262,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Bradley Mackenzie","rep":"Justice Kulchisky","sales_week":1,"field_hours_week":17.12,"days_worked":4,"unique_doors":149,"conv_sales":2,"conv_pct":0.013422818791946308,"activity_records":199,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1101.1000000000001,"cancel_pct":0.2,"disconnect_pct":0.16666666666666666},{"office":"Bradley Mackenzie","rep":"Kahlil Ahmad","sales_week":1,"field_hours_week":27.26,"days_worked":5,"unique_doors":186,"conv_sales":3,"conv_pct":0.016129032258064516,"activity_records":472,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Eghan Issa Bagheri","rep":"John Sh Buni","sales_week":4,"field_hours_week":18.36,"days_worked":5,"unique_doors":186,"conv_sales":3,"conv_pct":0.016129032258064516,"activity_records":492,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":361.5,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Eghan Issa Bagheri","rep":"Macauley Kalu","sales_week":4,"field_hours_week":28.84,"days_worked":4,"unique_doors":168,"conv_sales":5,"conv_pct":0.02976190476190476,"activity_records":384,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1217.4,"cancel_pct":null,"disconnect_pct":null},{"office":"Eghan Issa Bagheri","rep":"Koby Porsawatdee","sales_week":2,"field_hours_week":16,"days_worked":4,"unique_doors":145,"conv_sales":3,"conv_pct":0.020689655172413793,"activity_records":299,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":284,"cancel_pct":0.05128205128205129,"disconnect_pct":0.0},{"office":"Eghan Issa Bagheri","rep":"Theo Chan","sales_week":2,"field_hours_week":10.39,"days_worked":2,"unique_doors":100,"conv_sales":3,"conv_pct":0.03,"activity_records":173,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Eghan Issa Bagheri","rep":"Letrell Russell","sales_week":1,"field_hours_week":14.26,"days_worked":4,"unique_doors":138,"conv_sales":1,"conv_pct":0.007246376811594203,"activity_records":205,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":400,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Fadi Haddaoui","rep":"Rohan Kumar","sales_week":11,"field_hours_week":24.49,"days_worked":4,"unique_doors":126,"conv_sales":14,"conv_pct":0.1111111111111111,"activity_records":138,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":2026.65,"cancel_pct":0.12558797909407665,"disconnect_pct":0.045454545454545456},{"office":"Fadi Haddaoui","rep":"Bhavuk Kinger","sales_week":10,"field_hours_week":30.2,"days_worked":5,"unique_doors":219,"conv_sales":10,"conv_pct":0.045662100456621,"activity_records":271,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1808.35,"cancel_pct":0.05263157894736842,"disconnect_pct":0.024390243902439025},{"office":"Fadi Haddaoui","rep":"Keerat Singh","sales_week":10,"field_hours_week":28.99,"days_worked":5,"unique_doors":169,"conv_sales":17,"conv_pct":0.10059171597633136,"activity_records":204,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1424.2,"cancel_pct":0.08919098143236075,"disconnect_pct":0.0},{"office":"Fadi Haddaoui","rep":"Ali Ghanad","sales_week":9,"field_hours_week":31.77,"days_worked":5,"unique_doors":137,"conv_sales":11,"conv_pct":0.08029197080291971,"activity_records":234,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":966.5999999999999,"cancel_pct":0.5333333333333333,"disconnect_pct":0.0},{"office":"Fadi Haddaoui","rep":"Amit Sodhi","sales_week":5,"field_hours_week":19.46,"days_worked":5,"unique_doors":142,"conv_sales":5,"conv_pct":0.035211267605633804,"activity_records":185,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":479.4,"cancel_pct":0.1068840579710145,"disconnect_pct":0.06274509803921569},{"office":"Fadi Haddaoui","rep":"Amitojpreet Singh","sales_week":5,"field_hours_week":36.16,"days_worked":5,"unique_doors":125,"conv_sales":11,"conv_pct":0.088,"activity_records":168,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":829.8,"cancel_pct":0.1623529411764706,"disconnect_pct":0.0},{"office":"Fadi Haddaoui","rep":"Manav Sharma","sales_week":5,"field_hours_week":19.7,"days_worked":5,"unique_doors":201,"conv_sales":3,"conv_pct":0.014925373134328358,"activity_records":332,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1156.3,"cancel_pct":0.041666666666666664,"disconnect_pct":0.0},{"office":"Fadi Haddaoui","rep":"Emmanuel Ibitayo","sales_week":4,"field_hours_week":16.85,"days_worked":4,"unique_doors":171,"conv_sales":3,"conv_pct":0.017543859649122806,"activity_records":211,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":103.5,"cancel_pct":0.2894736842105263,"disconnect_pct":0.041666666666666664},{"office":"Fadi Haddaoui","rep":"Satvir Sran","sales_week":4,"field_hours_week":22.35,"days_worked":4,"unique_doors":116,"conv_sales":5,"conv_pct":0.04310344827586207,"activity_records":199,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1013.6,"cancel_pct":0.2290469348659004,"disconnect_pct":0.0},{"office":"Fadi Haddaoui","rep":"Ahmed Kammoun","sales_week":2,"field_hours_week":19.35,"days_worked":3,"unique_doors":120,"conv_sales":4,"conv_pct":0.03333333333333333,"activity_records":169,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Fadi Haddaoui","rep":"Anthony Samms","sales_week":2,"field_hours_week":28.78,"days_worked":5,"unique_doors":152,"conv_sales":4,"conv_pct":0.02631578947368421,"activity_records":238,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Fadi Haddaoui","rep":"Dilpreet Singh","sales_week":2,"field_hours_week":27.72,"days_worked":5,"unique_doors":289,"conv_sales":3,"conv_pct":0.010380622837370242,"activity_records":512,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":619.15,"cancel_pct":0.1875,"disconnect_pct":0.0},{"office":"Fadi Haddaoui","rep":"Wafi Ahmed","sales_week":1,"field_hours_week":29.34,"days_worked":5,"unique_doors":241,"conv_sales":1,"conv_pct":0.004149377593360996,"activity_records":342,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":255.4,"cancel_pct":0.1,"disconnect_pct":0.0},{"office":"Fadi Haddaoui","rep":"DeMarco Robert Haley","sales_week":0,"field_hours_week":4.3,"days_worked":3,"unique_doors":5,"conv_sales":0,"conv_pct":0.0,"activity_records":8,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.4642857142857143,"disconnect_pct":0.0},{"office":"Fadi Haddaoui","rep":"Osarenren Ekhorutomwen","sales_week":0,"field_hours_week":9.48,"days_worked":2,"unique_doors":52,"conv_sales":0,"conv_pct":0.0,"activity_records":54,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.25,"disconnect_pct":0.0},{"office":"Harmanpreet Singh25","rep":"Rupinderjit Singh","sales_week":7,"field_hours_week":21.44,"days_worked":5,"unique_doors":64,"conv_sales":9,"conv_pct":0.140625,"activity_records":108,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":549.4,"cancel_pct":0.07500000000000001,"disconnect_pct":0.10416666666666666},{"office":"Harmanpreet Singh25","rep":"Gurbachan Singh1","sales_week":6,"field_hours_week":34.23,"days_worked":5,"unique_doors":104,"conv_sales":8,"conv_pct":0.07692307692307693,"activity_records":152,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":864.8,"cancel_pct":0.0,"disconnect_pct":0.0625},{"office":"Harmanpreet Singh25","rep":"Komalpreet Kaur33","sales_week":5,"field_hours_week":11.26,"days_worked":3,"unique_doors":61,"conv_sales":5,"conv_pct":0.08196721311475409,"activity_records":64,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":72,"cancel_pct":0.26666666666666666,"disconnect_pct":0.0},{"office":"Harmanpreet Singh25","rep":"Munira Haidari","sales_week":4,"field_hours_week":42.4,"days_worked":5,"unique_doors":324,"conv_sales":3,"conv_pct":0.009259259259259259,"activity_records":479,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":308,"cancel_pct":0.125,"disconnect_pct":0.0},{"office":"Harmanpreet Singh25","rep":"Sahil Chaudhary","sales_week":4,"field_hours_week":23.45,"days_worked":5,"unique_doors":117,"conv_sales":5,"conv_pct":0.042735042735042736,"activity_records":176,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":556,"cancel_pct":0.1484375,"disconnect_pct":0.17725095785440612},{"office":"Harmanpreet Singh25","rep":"Bhavanpreet Kaur","sales_week":2,"field_hours_week":9.63,"days_worked":2,"unique_doors":67,"conv_sales":2,"conv_pct":0.029850746268656716,"activity_records":102,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":72,"cancel_pct":0.18055555555555555,"disconnect_pct":0.07142857142857142},{"office":"Harmanpreet Singh25","rep":"Jacob Martin","sales_week":2,"field_hours_week":26.93,"days_worked":5,"unique_doors":292,"conv_sales":2,"conv_pct":0.00684931506849315,"activity_records":441,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":377.5,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Harmanpreet Singh25","rep":"Vansh Davesar","sales_week":2,"field_hours_week":18.15,"days_worked":4,"unique_doors":73,"conv_sales":4,"conv_pct":0.0547945205479452,"activity_records":122,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":452,"cancel_pct":0.015625,"disconnect_pct":0.059027777777777776},{"office":"Harmanpreet Singh25","rep":"Amarbir Singh","sales_week":1,"field_hours_week":23.57,"days_worked":5,"unique_doors":290,"conv_sales":1,"conv_pct":0.0034482758620689655,"activity_records":409,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":864.8,"cancel_pct":0.0,"disconnect_pct":0.16666666666666666},{"office":"Harmanpreet Singh25","rep":"Madhav Bhardwaj","sales_week":1,"field_hours_week":0,"days_worked":1,"unique_doors":1,"conv_sales":1,"conv_pct":1.0,"activity_records":1,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":182,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Harmanpreet Singh25","rep":"Simranjit Singh8","sales_week":1,"field_hours_week":24.32,"days_worked":5,"unique_doors":174,"conv_sales":2,"conv_pct":0.011494252873563218,"activity_records":274,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":117,"cancel_pct":0.6222222222222222,"disconnect_pct":0.0},{"office":"Harmanpreet Singh25","rep":"Gaurav Sharma","sales_week":0,"field_hours_week":5.56,"days_worked":1,"unique_doors":47,"conv_sales":0,"conv_pct":0.0,"activity_records":89,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1156.3,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Jesutondin Kpagbe M I B Sagbohan","rep":"Roland Ligan","sales_week":3,"field_hours_week":25.57,"days_worked":5,"unique_doors":195,"conv_sales":3,"conv_pct":0.015384615384615385,"activity_records":281,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":55,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Jesutondin Kpagbe M I B Sagbohan","rep":"Laynohe Norgill Andre Joel Grahou","sales_week":1,"field_hours_week":12.59,"days_worked":3,"unique_doors":78,"conv_sales":0,"conv_pct":0.0,"activity_records":128,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Jesutondin Kpagbe M I B Sagbohan","rep":"Thiemo Sanou Diallo","sales_week":1,"field_hours_week":10.94,"days_worked":2,"unique_doors":190,"conv_sales":3,"conv_pct":0.015789473684210527,"activity_records":274,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.27419354838709675,"disconnect_pct":0.0},{"office":"Jesutondin Kpagbe M I B Sagbohan","rep":"Thierno Sanou Diallo","sales_week":0,"field_hours_week":15.71,"days_worked":3,"unique_doors":190,"conv_sales":3,"conv_pct":0.015789473684210527,"activity_records":274,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.27419354838709675,"disconnect_pct":0.0},{"office":"Joe Ishak","rep":"Christian Baziemo","sales_week":7,"field_hours_week":23.88,"days_worked":4,"unique_doors":201,"conv_sales":7,"conv_pct":0.03482587064676617,"activity_records":379,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1442.4,"cancel_pct":0.0,"disconnect_pct":0.1527777777777778},{"office":"Joe Ishak","rep":"Abdel Karimu","sales_week":5,"field_hours_week":28.89,"days_worked":5,"unique_doors":167,"conv_sales":4,"conv_pct":0.023952095808383235,"activity_records":465,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":240.4,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Joe Ishak","rep":"Arsene Takamgno","sales_week":4,"field_hours_week":28.04,"days_worked":5,"unique_doors":151,"conv_sales":5,"conv_pct":0.033112582781456956,"activity_records":511,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":109,"cancel_pct":0.0,"disconnect_pct":0.37777777777777777},{"office":"Joe Ishak","rep":"Freselam Gebrekidan","sales_week":2,"field_hours_week":26.83,"days_worked":5,"unique_doors":242,"conv_sales":2,"conv_pct":0.008264462809917356,"activity_records":834,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":200,"cancel_pct":0.09375,"disconnect_pct":0.15},{"office":"Joe Ishak","rep":"Mohamed Maiga Zakariaou","sales_week":2,"field_hours_week":25.71,"days_worked":5,"unique_doors":186,"conv_sales":3,"conv_pct":0.016129032258064516,"activity_records":263,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":424,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Joe Ishak","rep":"Onyekachi Helen Martha Nwazuruokeh","sales_week":2,"field_hours_week":17.06,"days_worked":3,"unique_doors":117,"conv_sales":1,"conv_pct":0.008547008547008548,"activity_records":220,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":128,"cancel_pct":0.11904761904761904,"disconnect_pct":0.20833333333333331},{"office":"Joe Ishak","rep":"Emmanuel Ngo Kana Suzama","sales_week":1,"field_hours_week":30.12,"days_worked":5,"unique_doors":176,"conv_sales":1,"conv_pct":0.005681818181818182,"activity_records":395,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":255,"cancel_pct":0.0,"disconnect_pct":0.1111111111111111},{"office":"Joe Ishak","rep":"Fode Magassouba","sales_week":1,"field_hours_week":23.69,"days_worked":5,"unique_doors":143,"conv_sales":4,"conv_pct":0.027972027972027972,"activity_records":285,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":755.4999999999999,"cancel_pct":0.03409090909090909,"disconnect_pct":0.02631578947368421},{"office":"Joe Ishak","rep":"Matthania Guillaume","sales_week":1,"field_hours_week":22.71,"days_worked":4,"unique_doors":105,"conv_sales":1,"conv_pct":0.009523809523809525,"activity_records":280,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":198,"cancel_pct":0.0,"disconnect_pct":0.12247474747474747},{"office":"Joe Ishak","rep":"Donklam Karl Amah","sales_week":0,"field_hours_week":20.08,"days_worked":4,"unique_doors":115,"conv_sales":1,"conv_pct":0.008695652173913044,"activity_records":173,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":36,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Joe Ishak","rep":"Holly Hall","sales_week":0,"field_hours_week":12.52,"days_worked":2,"unique_doors":118,"conv_sales":0,"conv_pct":0.0,"activity_records":267,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Joe Ishak","rep":"Mohammed Mansouria","sales_week":0,"field_hours_week":23.59,"days_worked":4,"unique_doors":123,"conv_sales":0,"conv_pct":0.0,"activity_records":217,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Mihai Pamfilie","rep":"Jibril Omar","sales_week":7,"field_hours_week":36.63,"days_worked":5,"unique_doors":203,"conv_sales":7,"conv_pct":0.034482758620689655,"activity_records":460,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":597.4,"cancel_pct":0.0,"disconnect_pct":0.0625},{"office":"Mihai Pamfilie","rep":"Osaretin Nosakhare","sales_week":4,"field_hours_week":28.33,"days_worked":4,"unique_doors":232,"conv_sales":5,"conv_pct":0.021551724137931036,"activity_records":492,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":711,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Mihai Pamfilie","rep":"Venkata Gunturi","sales_week":3,"field_hours_week":25.71,"days_worked":5,"unique_doors":200,"conv_sales":3,"conv_pct":0.015,"activity_records":462,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":893,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Mihai Pamfilie","rep":"Jack Walsh","sales_week":1,"field_hours_week":11.33,"days_worked":3,"unique_doors":92,"conv_sales":1,"conv_pct":0.010869565217391304,"activity_records":185,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Mihai Pamfilie","rep":"Aiden Mccormack","sales_week":0,"field_hours_week":21.24,"days_worked":4,"unique_doors":151,"conv_sales":0,"conv_pct":0.0,"activity_records":512,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Mihai Pamfilie","rep":"Isabell Leclair","sales_week":0,"field_hours_week":3.12,"days_worked":1,"unique_doors":52,"conv_sales":1,"conv_pct":0.019230769230769232,"activity_records":86,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.15,"disconnect_pct":0.0},{"office":"Prince Pouffon","rep":"Blessed Haruzivishe","sales_week":2,"field_hours_week":16.34,"days_worked":5,"unique_doors":94,"conv_sales":4,"conv_pct":0.0425531914893617,"activity_records":264,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":215,"cancel_pct":0.0,"disconnect_pct":0.12179487179487179},{"office":"Prince Pouffon","rep":"Chukwudi Tobenna MOGO","sales_week":2,"field_hours_week":26.14,"days_worked":5,"unique_doors":152,"conv_sales":4,"conv_pct":0.02631578947368421,"activity_records":304,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1154.9,"cancel_pct":0.1111111111111111,"disconnect_pct":0.0},{"office":"Prince Pouffon","rep":"Junaid Ahmed Sahil","sales_week":2,"field_hours_week":19.15,"days_worked":4,"unique_doors":145,"conv_sales":3,"conv_pct":0.020689655172413793,"activity_records":286,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1650.9,"cancel_pct":0.0,"disconnect_pct":0.07428571428571429},{"office":"Salaheddine Samy Khlafa","rep":"Ahmad Shafi Ghobar","sales_week":1,"field_hours_week":15.08,"days_worked":4,"unique_doors":16,"conv_sales":0,"conv_pct":0.0,"activity_records":51,"has_conversion_data":true,"office_has_conversion_report":false,"rep_pay":72,"cancel_pct":0.15,"disconnect_pct":0.0},{"office":"Salaheddine Samy Khlafa","rep":"Tommy Blain Tommy","sales_week":0,"field_hours_week":20.92,"days_worked":5,"unique_doors":null,"conv_sales":null,"conv_pct":null,"activity_records":null,"has_conversion_data":false,"office_has_conversion_report":false,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Sofiane Mostefai","rep":"Mouhammad Al Mansour Mbaye","sales_week":0,"field_hours_week":23.75,"days_worked":5,"unique_doors":274,"conv_sales":0,"conv_pct":0.0,"activity_records":649,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":272.4,"cancel_pct":0.038461538461538464,"disconnect_pct":0.125},{"office":"Steven Thai","rep":"Parmeet Singh","sales_week":1,"field_hours_week":14.6,"days_worked":3,"unique_doors":49,"conv_sales":0,"conv_pct":0.0,"activity_records":50,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":829.8,"cancel_pct":0.5,"disconnect_pct":0.0},{"office":"Steven Thai","rep":"Cassidy Thorne","sales_week":0,"field_hours_week":11.92,"days_worked":2,"unique_doors":148,"conv_sales":0,"conv_pct":0.0,"activity_records":338,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Thierno Bocar Sissoko","rep":"Marc Andre Beaulieu","sales_week":5,"field_hours_week":20.95,"days_worked":5,"unique_doors":94,"conv_sales":7,"conv_pct":0.07446808510638298,"activity_records":210,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":624.8,"cancel_pct":0.06818181818181818,"disconnect_pct":0.06971153846153846},{"office":"Thierno Bocar Sissoko","rep":"Gabrielle Barkley","sales_week":2,"field_hours_week":30.7,"days_worked":5,"unique_doors":138,"conv_sales":3,"conv_pct":0.021739130434782608,"activity_records":243,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":368.4,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Thierno Bocar Sissoko","rep":"Jawad Elcheikh","sales_week":2,"field_hours_week":16.63,"days_worked":5,"unique_doors":188,"conv_sales":3,"conv_pct":0.015957446808510637,"activity_records":409,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.05882352941176471,"disconnect_pct":0.16666666666666666},{"office":"Thierno Bocar Sissoko","rep":"Joseph Saucier","sales_week":2,"field_hours_week":17.33,"days_worked":4,"unique_doors":85,"conv_sales":2,"conv_pct":0.023529411764705882,"activity_records":177,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":451.9,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Thierno Bocar Sissoko","rep":"Steeve Tonne Tonne","sales_week":2,"field_hours_week":29.6,"days_worked":5,"unique_doors":130,"conv_sales":2,"conv_pct":0.015384615384615385,"activity_records":308,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Thierno Bocar Sissoko","rep":"Abigael Duplaisir Ntantichou","sales_week":1,"field_hours_week":3.07,"days_worked":1,"unique_doors":11,"conv_sales":1,"conv_pct":0.09090909090909091,"activity_records":11,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Thierno Bocar Sissoko","rep":"Jordan Berjuste","sales_week":1,"field_hours_week":6.69,"days_worked":1,"unique_doors":28,"conv_sales":1,"conv_pct":0.03571428571428571,"activity_records":36,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Thierno Bocar Sissoko","rep":"Felix Coulombe","sales_week":0,"field_hours_week":18.4,"days_worked":5,"unique_doors":73,"conv_sales":2,"conv_pct":0.0273972602739726,"activity_records":119,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":660,"cancel_pct":0.08333333333333333,"disconnect_pct":0.023809523809523808},{"office":"Thierno Bocar Sissoko","rep":"Maroua Babou","sales_week":0,"field_hours_week":21.26,"days_worked":4,"unique_doors":78,"conv_sales":1,"conv_pct":0.01282051282051282,"activity_records":152,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":494.4,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Thierno Bocar Sissoko","rep":"Mohamed Dadoun","sales_week":0,"field_hours_week":22.87,"days_worked":4,"unique_doors":154,"conv_sales":1,"conv_pct":0.006493506493506494,"activity_records":320,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":270,"cancel_pct":null,"disconnect_pct":null},{"office":"Thierno Bocar Sissoko","rep":"Oluwatobi Fabolude","sales_week":0,"field_hours_week":11.99,"days_worked":2,"unique_doors":86,"conv_sales":0,"conv_pct":0.0,"activity_records":159,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Thierno Bocar Sissoko","rep":"Ouga Gnago","sales_week":0,"field_hours_week":16.14,"days_worked":4,"unique_doors":137,"conv_sales":0,"conv_pct":0.0,"activity_records":278,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":471,"cancel_pct":null,"disconnect_pct":null},{"office":"Thierno Bocar Sissoko","rep":"Shazia Rahimi","sales_week":0,"field_hours_week":21.86,"days_worked":4,"unique_doors":147,"conv_sales":0,"conv_pct":0.0,"activity_records":232,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Thierno Bocar Sissoko","rep":"Valentina Geslin","sales_week":0,"field_hours_week":19.65,"days_worked":4,"unique_doors":94,"conv_sales":0,"conv_pct":0.0,"activity_records":156,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.0,"disconnect_pct":0.3},{"office":"Tyler Bernard Martin","rep":"Odai Shehadeh","sales_week":8,"field_hours_week":30.46,"days_worked":5,"unique_doors":114,"conv_sales":11,"conv_pct":0.09649122807017543,"activity_records":133,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1155.4,"cancel_pct":0.0,"disconnect_pct":0.03167641325536062},{"office":"Tyler Bernard Martin","rep":"Jeffrey Hanlon","sales_week":7,"field_hours_week":22.83,"days_worked":5,"unique_doors":89,"conv_sales":6,"conv_pct":0.06741573033707865,"activity_records":123,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":254,"cancel_pct":0.08012820512820512,"disconnect_pct":0.08883304195804195},{"office":"Tyler Bernard Martin","rep":"Samar Hayat","sales_week":6,"field_hours_week":14.73,"days_worked":3,"unique_doors":130,"conv_sales":7,"conv_pct":0.05384615384615385,"activity_records":274,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":118.5,"cancel_pct":null,"disconnect_pct":null},{"office":"Tyler Bernard Martin","rep":"Megan Horridge","sales_week":5,"field_hours_week":24,"days_worked":4,"unique_doors":155,"conv_sales":5,"conv_pct":0.03225806451612903,"activity_records":441,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":791.4,"cancel_pct":0.0,"disconnect_pct":0.041666666666666664},{"office":"Tyler Bernard Martin","rep":"Rahul Sharma1","sales_week":5,"field_hours_week":16.62,"days_worked":3,"unique_doors":249,"conv_sales":6,"conv_pct":0.024096385542168676,"activity_records":420,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1725.3000000000002,"cancel_pct":0.019230769230769232,"disconnect_pct":0.0},{"office":"Tyler Bernard Martin","rep":"Aryan Shah","sales_week":4,"field_hours_week":29,"days_worked":5,"unique_doors":192,"conv_sales":3,"conv_pct":0.015625,"activity_records":366,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":932.4,"cancel_pct":0.0,"disconnect_pct":0.030303030303030304},{"office":"Tyler Bernard Martin","rep":"Ethan Ruzigamanzi","sales_week":4,"field_hours_week":21.47,"days_worked":4,"unique_doors":135,"conv_sales":6,"conv_pct":0.044444444444444446,"activity_records":368,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Tyler Bernard Martin","rep":"Hudson Howell","sales_week":4,"field_hours_week":14.17,"days_worked":3,"unique_doors":29,"conv_sales":4,"conv_pct":0.13793103448275862,"activity_records":41,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":659.3,"cancel_pct":0.19806763285024154,"disconnect_pct":0.07142857142857142},{"office":"Tyler Bernard Martin","rep":"Nayankumar Rohit","sales_week":4,"field_hours_week":26.91,"days_worked":5,"unique_doors":289,"conv_sales":6,"conv_pct":0.020761245674740483,"activity_records":570,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":236,"cancel_pct":0.0,"disconnect_pct":0.0625},{"office":"Tyler Bernard Martin","rep":"Shaquille Persad","sales_week":4,"field_hours_week":29.17,"days_worked":5,"unique_doors":214,"conv_sales":6,"conv_pct":0.028037383177570093,"activity_records":350,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1054.8,"cancel_pct":0.10000000000000002,"disconnect_pct":0.022222222222222223},{"office":"Tyler Bernard Martin","rep":"Shubhangi Goswami","sales_week":4,"field_hours_week":32.75,"days_worked":5,"unique_doors":189,"conv_sales":5,"conv_pct":0.026455026455026454,"activity_records":471,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":1.0,"disconnect_pct":null},{"office":"Tyler Bernard Martin","rep":"Abrar Khan","sales_week":3,"field_hours_week":27.72,"days_worked":5,"unique_doors":209,"conv_sales":3,"conv_pct":0.014354066985645933,"activity_records":573,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":966.1999999999999,"cancel_pct":null,"disconnect_pct":null},{"office":"Tyler Bernard Martin","rep":"Amir Rapadas","sales_week":3,"field_hours_week":27.3,"days_worked":5,"unique_doors":172,"conv_sales":4,"conv_pct":0.023255813953488372,"activity_records":598,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":951.8,"cancel_pct":0.09375,"disconnect_pct":0.0},{"office":"Tyler Bernard Martin","rep":"Daniel Fruehwald","sales_week":3,"field_hours_week":32.99,"days_worked":5,"unique_doors":208,"conv_sales":4,"conv_pct":0.019230769230769232,"activity_records":378,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":257.4,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Tyler Bernard Martin","rep":"Jatin Chugh","sales_week":3,"field_hours_week":23.69,"days_worked":5,"unique_doors":129,"conv_sales":5,"conv_pct":0.03875968992248062,"activity_records":371,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":783,"cancel_pct":0.0,"disconnect_pct":0.05555555555555555},{"office":"Tyler Bernard Martin","rep":"Sain Alif","sales_week":3,"field_hours_week":9.96,"days_worked":5,"unique_doors":189,"conv_sales":3,"conv_pct":0.015873015873015872,"activity_records":270,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":490,"cancel_pct":0.017543859649122806,"disconnect_pct":0.0},{"office":"Tyler Bernard Martin","rep":"Ty OBrien","sales_week":3,"field_hours_week":24.28,"days_worked":4,"unique_doors":170,"conv_sales":4,"conv_pct":0.023529411764705882,"activity_records":478,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1121.2,"cancel_pct":0.2692307692307692,"disconnect_pct":0.041666666666666664},{"office":"Tyler Bernard Martin","rep":"Amogh Mehta","sales_week":2,"field_hours_week":28.85,"days_worked":5,"unique_doors":265,"conv_sales":5,"conv_pct":0.018867924528301886,"activity_records":593,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":108,"cancel_pct":0.1875,"disconnect_pct":0.0},{"office":"Tyler Bernard Martin","rep":"Bhavya Gautam","sales_week":2,"field_hours_week":28.11,"days_worked":5,"unique_doors":111,"conv_sales":4,"conv_pct":0.036036036036036036,"activity_records":262,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":365.4,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Tyler Bernard Martin","rep":"Elijia Demetrius Scott Bower","sales_week":2,"field_hours_week":14.03,"days_worked":4,"unique_doors":124,"conv_sales":3,"conv_pct":0.024193548387096774,"activity_records":194,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":1403,"cancel_pct":0.0,"disconnect_pct":0.045454545454545456},{"office":"Tyler Bernard Martin","rep":"Given Tusabe","sales_week":2,"field_hours_week":28.07,"days_worked":5,"unique_doors":186,"conv_sales":2,"conv_pct":0.010752688172043012,"activity_records":393,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Tyler Bernard Martin","rep":"Gurmehar Soor","sales_week":2,"field_hours_week":30.72,"days_worked":5,"unique_doors":164,"conv_sales":3,"conv_pct":0.018292682926829267,"activity_records":255,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":329.4,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Tyler Bernard Martin","rep":"Pankaj Sharma","sales_week":2,"field_hours_week":17.73,"days_worked":5,"unique_doors":218,"conv_sales":2,"conv_pct":0.009174311926605505,"activity_records":403,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":72,"cancel_pct":0.3333333333333333,"disconnect_pct":0.5},{"office":"Tyler Bernard Martin","rep":"Adam Rzoumi","sales_week":1,"field_hours_week":24.94,"days_worked":5,"unique_doors":253,"conv_sales":1,"conv_pct":0.003952569169960474,"activity_records":373,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":399.4,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Tyler Bernard Martin","rep":"Eleena Akbari Far","sales_week":1,"field_hours_week":30.52,"days_worked":5,"unique_doors":204,"conv_sales":2,"conv_pct":0.00980392156862745,"activity_records":636,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":127,"cancel_pct":0.0,"disconnect_pct":0.0625},{"office":"Tyler Bernard Martin","rep":"Jevon Shemar Mclean","sales_week":1,"field_hours_week":16.68,"days_worked":3,"unique_doors":122,"conv_sales":1,"conv_pct":0.00819672131147541,"activity_records":195,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Tyler Bernard Martin","rep":"Mikayla Nelson","sales_week":1,"field_hours_week":31.2,"days_worked":5,"unique_doors":200,"conv_sales":1,"conv_pct":0.005,"activity_records":676,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":385.4,"cancel_pct":0.0,"disconnect_pct":0.0},{"office":"Tyler Bernard Martin","rep":"Rushanth Ananthakrishnan","sales_week":1,"field_hours_week":23.41,"days_worked":5,"unique_doors":162,"conv_sales":2,"conv_pct":0.012345679012345678,"activity_records":326,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":870,"cancel_pct":0.0,"disconnect_pct":0.025},{"office":"Tyler Bernard Martin","rep":"Christian Fantahun","sales_week":0,"field_hours_week":11.16,"days_worked":2,"unique_doors":50,"conv_sales":0,"conv_pct":0.0,"activity_records":87,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Tyler Bernard Martin","rep":"Ernest Kent","sales_week":0,"field_hours_week":5.75,"days_worked":1,"unique_doors":78,"conv_sales":1,"conv_pct":0.01282051282051282,"activity_records":140,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null},{"office":"Tyler Bernard Martin","rep":"Shamar Wilson","sales_week":0,"field_hours_week":8.99,"days_worked":2,"unique_doors":44,"conv_sales":0,"conv_pct":0.0,"activity_records":114,"has_conversion_data":true,"office_has_conversion_report":true,"rep_pay":null,"cancel_pct":null,"disconnect_pct":null}]
+</script>
+<script id="offices-data" type="application/json">[{"office":"Bennet Shaju","target":0.023,"province":"ON","rep_count":4,"has_conversion_report":true,"owner_pay_total":2596,"avg_field_hrs_per_repday":5.52,"owner_personal_production":291},{"office":"Bradley Mackenzie","target":0.025,"province":"AB","rep_count":11,"has_conversion_report":true,"owner_pay_total":12251.5,"avg_field_hrs_per_repday":5.53,"owner_personal_production":270},{"office":"Eghan Issa Bagheri","target":0.023,"province":"ON","rep_count":5,"has_conversion_report":true,"owner_pay_total":4147.5,"avg_field_hrs_per_repday":4.62,"owner_personal_production":72},{"office":"Fadi Haddaoui","target":0.035,"province":"NB","rep_count":15,"has_conversion_report":true,"owner_pay_total":16976,"avg_field_hrs_per_repday":5.37,"owner_personal_production":null},{"office":"Harmanpreet Singh25","target":0.025,"province":"AB","rep_count":12,"has_conversion_report":true,"owner_pay_total":6264,"avg_field_hrs_per_repday":5.24,"owner_personal_production":null},{"office":"Jesutondin Kpagbe M I B Sagbohan","target":0.04,"province":"NB","rep_count":4,"has_conversion_report":true,"owner_pay_total":null,"avg_field_hrs_per_repday":4.99,"owner_personal_production":null},{"office":"Joe Ishak","target":0.023,"province":"ON","rep_count":12,"has_conversion_report":true,"owner_pay_total":5588,"avg_field_hrs_per_repday":5.55,"owner_personal_production":100},{"office":"Mihai Pamfilie","target":0.023,"province":"ON","rep_count":6,"has_conversion_report":true,"owner_pay_total":4295,"avg_field_hrs_per_repday":5.74,"owner_personal_production":238},{"office":"Prince Pouffon","target":0.035,"province":"MB","rep_count":3,"has_conversion_report":true,"owner_pay_total":5540,"avg_field_hrs_per_repday":4.4,"owner_personal_production":null},{"office":"Salaheddine Samy Khlafa","target":0.03,"province":"BC","rep_count":2,"has_conversion_report":false,"owner_pay_total":608,"avg_field_hrs_per_repday":4,"owner_personal_production":null},{"office":"Sofiane Mostefai","target":0.035,"province":"MB","rep_count":1,"has_conversion_report":true,"owner_pay_total":1426,"avg_field_hrs_per_repday":4.75,"owner_personal_production":470.4},{"office":"Steven Thai","target":0.025,"province":"AB","rep_count":2,"has_conversion_report":true,"owner_pay_total":2174,"avg_field_hrs_per_repday":5.3,"owner_personal_production":717.5},{"office":"Thierno Bocar Sissoko","target":0.023,"province":"ON","rep_count":14,"has_conversion_report":true,"owner_pay_total":7208,"avg_field_hrs_per_repday":4.85,"owner_personal_production":null},{"office":"Tyler Bernard Martin","target":0.023,"province":"ON","rep_count":31,"has_conversion_report":true,"owner_pay_total":27474,"avg_field_hrs_per_repday":5.32,"owner_personal_production":null}]
+</script>
+<script>
+(function(){
+  "use strict";
+
+  var MASTER = JSON.parse(document.getElementById('master-data').textContent);
+  var OFFICES = JSON.parse(document.getElementById('offices-data').textContent);
+
+  var OFFICE_ORDER = OFFICES.slice().sort(function(a,b){
+    if (b.has_conversion_report !== a.has_conversion_report) return b.has_conversion_report ? 1 : -1;
+    return a.office.localeCompare(b.office);
+  });
+  var OFFICE_MAP = {};
+  OFFICES.forEach(function(o){ OFFICE_MAP[o.office] = o; });
+
+  // ---------------- i18n ----------------
+  var STR = {
+    en: {
+      campaignTitle: "Rogers Res",
+      campaignSub: "Scorecard",
+      rangeWeek: "Last Week", rangeMonth: "Last Month", range90: "Last 90 Days",
+      rangeAll: "All Time", rangeCustom: "Custom Range",
+      rangeNoteWeek: "Showing Sep 6–12, 2026 — the only week of conversion data loaded so far.",
+      rangeNoteOther: "Only one week of conversion data (Sep 6–12, 2026) has been loaded — this view shows the same week until more history is added.",
+      officeRankingsTitle: "Office Rankings",
+      officeRankingsSub: "Tap a row to filter the reps below to that office",
+      colOffice: "Office", colReps: "Reps", colConv: "Conversion %", colSales: "Sales",
+      colDoors: "Unique Doors", colCancel: "Cancel %", colDisc: "Disconnect %", colPay: "Wire",
+      colAvgPay: "Avg Rep Pay",
+      colOwnerProd: "Owner Production",
+      colHrsDay: "Avg Hours/Day",
+      colStatus: "Status",
+      repCardsTitle: "Rep Performance",
+      searchPlaceholder: "Search reps...",
+      sortConvDesc: "Sort: Conversion % (high–low)",
+      sortSalesDesc: "Sort: Sales (high–low)",
+      sortNameAsc: "Sort: Name (A–Z)",
+      sortPayDesc: "Sort: Pay (high–low)",
+      footerLeft: "Rogers Res · Cydcor Canada · Internal performance tool",
+      allOffices: "All Offices",
+      reps: "reps",
+      repsShowing: "reps shown",
+      badgeStrong: "STRONG", badgeMonitor: "MONITOR", badgeAtRisk: "AT RISK",
+      badgeLowVol: "LOW VOLUME", badgeNoData: "NO DATA",
+      mSales: "Sales", mSalesPerDay: "Sales / Day", mDoors: "Unique Doors",
+      mDoorsPerDay: "Doors / Day", mFieldHrs: "Field Hours", mHrsPerDay: "Hours / Day",
+      mDays: "Days Worked", mCancel: "Cancel %", mDisc: "Disconnect %", mPay: "Pay",
+      mProductMix: "Product Mix", productMixSoon: "Coming tomorrow",
+      noConvShort: "No conversion data",
+      noConvOfficeBanner: "<strong>6 offices have no conversion report data yet</strong> (Bradley Mackenzie, Harmanpreet Singh, Prince Pouffon, Salaheddine Samy Khlafa, Sofiane Mostefai, Steven Thai) — the Salesforce export Jenn has access to didn't include them. Field hours, pay, and cancel/disconnect data are still shown where available.",
+      target: "Target", vsTarget: "vs target",
+      kpiTotalSales: "Total Sales", kpiConv: "Overall Conversion %",
+      kpiHeadcount: "Reps Worked This Week",
+    },
+    fr: {
+      campaignTitle: "Rogers Res",
+      campaignSub: "Tableau de bord",
+      rangeWeek: "Semaine dernière", rangeMonth: "Dernier mois", range90: "90 derniers jours",
+      rangeAll: "Depuis le début", rangeCustom: "Plage personnalisée",
+      rangeNoteWeek: "Affiche du 6 au 12 sept. 2026 — la seule semaine de données de conversion chargée à ce jour.",
+      rangeNoteOther: "Une seule semaine de données de conversion (6–12 sept. 2026) a été chargée — cette vue affiche la même semaine en attendant plus d'historique.",
+      officeRankingsTitle: "Classement des bureaux",
+      officeRankingsSub: "Cliquez sur une ligne pour filtrer les représentants ci-dessous",
+      colOffice: "Bureau", colReps: "Repr.", colConv: "Taux de conversion", colSales: "Ventes",
+      colDoors: "Portes uniques", colCancel: "Taux d'annulation", colDisc: "Taux de débranchement", colPay: "Virement",
+      colAvgPay: "Rémun. moy. / repr.",
+      colOwnerProd: "Production du gérant",
+      colHrsDay: "Heures/jour moy.",
+      colStatus: "Statut",
+      repCardsTitle: "Performance des représentants",
+      searchPlaceholder: "Rechercher un représentant...",
+      sortConvDesc: "Trier : Taux de conversion (décroissant)",
+      sortSalesDesc: "Trier : Ventes (décroissant)",
+      sortNameAsc: "Trier : Nom (A–Z)",
+      sortPayDesc: "Trier : Rémunération (décroissant)",
+      footerLeft: "Rogers Res · Cydcor Canada · Outil de performance interne",
+      allOffices: "Tous les bureaux",
+      reps: "repr.",
+      repsShowing: "représentants affichés",
+      badgeStrong: "SOLIDE", badgeMonitor: "À SURVEILLER", badgeAtRisk: "À RISQUE",
+      badgeLowVol: "VOLUME FAIBLE", badgeNoData: "AUCUNE DONNÉE",
+      mSales: "Ventes", mSalesPerDay: "Ventes / jour", mDoors: "Portes uniques",
+      mDoorsPerDay: "Portes / jour", mFieldHrs: "Heures sur le terrain", mHrsPerDay: "Heures / jour",
+      mDays: "Jours travaillés", mCancel: "Taux d'annulation", mDisc: "Taux de débranchement", mPay: "Rémunération",
+      mProductMix: "Répartition des produits", productMixSoon: "À venir demain",
+      noConvShort: "Aucune donnée de conversion",
+      noConvOfficeBanner: "<strong>6 bureaux n'ont pas encore de données de conversion</strong> (Bradley Mackenzie, Harmanpreet Singh, Prince Pouffon, Salaheddine Samy Khlafa, Sofiane Mostefai, Steven Thai) — le rapport Salesforce auquel Jenn a accès ne les incluait pas. Les heures sur le terrain, la rémunération et les taux d'annulation/débranchement sont affichés lorsqu'ils sont disponibles.",
+      target: "Cible", vsTarget: "vs cible",
+      kpiTotalSales: "Ventes totales", kpiConv: "Taux de conversion global",
+      kpiHeadcount: "Repr. actifs cette semaine",
+    }
+  };
+
+  var state = {
+    lang: 'en',
+    range: 'week',
+    office: 'all',
+    search: '',
+    sort: 'conv_desc',
+    officeSortKey: 'sales',
+    officeSortDir: 'desc'
+  };
+
+  function t(key){ return STR[state.lang][key] || key; }
+  function pct(x, digits){ if (x===null||x===undefined) return null; return (x*100).toFixed(digits===undefined?2:digits)+'%'; }
+  function money(x){ if (x===null||x===undefined) return null; return '$' + x.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function moneyRound(x){ if (x===null||x===undefined) return null; return '$' + Math.round(x).toLocaleString(); }
+  function round1(x){ return Math.round(x*10)/10; }
+
+  // ---------------- Threshold logic ----------------
+  function conversionColor(rep){
+    var office = OFFICE_MAP[rep.office];
+    if (!office || office.target===null || office.target===undefined) return 'gray';
+    if (!rep.has_conversion_data) return 'gray';
+    var target = office.target;
+    if (rep.conv_pct >= target) return 'green';
+    if (rep.conv_pct >= target - 0.005) return 'yellow';
+    return 'red';
+  }
+  function salesColor(sales){
+    if (sales===null||sales===undefined) return 'gray';
+    return sales >= 6 ? 'green' : 'red';
+  }
+  function doorsPerDayColor(v){
+    if (v===null||v===undefined) return 'gray';
+    if (v >= 50) return 'green';
+    if (v >= 40) return 'yellow';
+    return 'red';
+  }
+  function hrsPerDayColor(v){
+    if (v===null||v===undefined) return 'gray';
+    if (v >= 6) return 'green';
+    if (v >= 5.5) return 'yellow';
+    return 'red';
+  }
+  function daysWorkedColor(v){
+    if (v===null||v===undefined) return 'gray';
+    if (v >= 6) return 'green';
+    if (v >= 4) return 'yellow';
+    return 'red';
+  }
+  function cancelColor(v){
+    if (v===null||v===undefined) return 'gray';
+    if (v < 0.10) return 'green';
+    if (v <= 0.12) return 'yellow';
+    return 'red';
+  }
+  function discColor(v){
+    if (v===null||v===undefined) return 'gray';
+    if (v <= 0.06) return 'green';
+    if (v <= 0.08) return 'yellow';
+    return 'red';
+  }
+
+  function repBadge(rep){
+    if (!rep.has_conversion_data) return {code:'nodata', color:'gray', label:t('badgeNoData')};
+    if (rep.conv_sales !== null && rep.conv_sales <= 2) return {code:'lowvol', color:'gray', label:t('badgeLowVol')};
+    var c = conversionColor(rep);
+    if (c === 'green') return {code:'strong', color:'green', label:t('badgeStrong')};
+    if (c === 'yellow') return {code:'monitor', color:'yellow', label:t('badgeMonitor')};
+    if (c === 'red') return {code:'atrisk', color:'red', label:t('badgeAtRisk')};
+    return {code:'nodata', color:'gray', label:t('badgeNoData')};
+  }
+
+  // ---------------- Office aggregates ----------------
+  function officeAggregates(officeName){
+    var reps = MASTER.filter(function(r){ return r.office===officeName; });
+    var withConv = reps.filter(function(r){ return r.has_conversion_data; });
+    var doors = withConv.reduce(function(s,r){ return s+r.unique_doors; },0);
+    var sales = withConv.reduce(function(s,r){ return s+r.conv_sales; },0);
+    var convPct = doors>0 ? sales/doors : null;
+    var cancelVals = reps.filter(function(r){return r.cancel_pct!==null;}).map(function(r){return r.cancel_pct;});
+    var discVals = reps.filter(function(r){return r.disconnect_pct!==null;}).map(function(r){return r.disconnect_pct;});
+    var avg = function(arr){ return arr.length? arr.reduce(function(a,b){return a+b;},0)/arr.length : null; };
+    var avgPayVals = reps.filter(function(r){return r.rep_pay!==null;}).map(function(r){return r.rep_pay;});
+    return {
+      reps: reps, repCount: reps.length,
+      doors: withConv.length? doors : null,
+      sales: withConv.length? sales : null,
+      convPct: withConv.length? convPct : null,
+      cancelPct: avg(cancelVals),
+      discPct: avg(discVals),
+      avgRepPay: avg(avgPayVals),
+    };
+  }
+
+  // ---------------- Rendering ----------------
+  function renderHeroKpis(){
+    var withConv = MASTER.filter(function(r){ return r.has_conversion_data; });
+    var totalSales = withConv.reduce(function(s,r){return s+r.conv_sales;},0);
+    var convPct = MASTER.reduce(function(s,r){return s+(r.unique_doors||0);},0) > 0
+      ? totalSales / withConv.reduce(function(s,r){return s+r.unique_doors;},0) : 0;
+    var headcount = MASTER.filter(function(r){ return r.days_worked && r.days_worked>0; }).length;
+    var el = document.getElementById('heroKpis');
+    el.innerHTML = [
+      kpiCard(totalSales, t('kpiTotalSales')),
+      kpiCard(pct(convPct,2), t('kpiConv')),
+      kpiCard(headcount, t('kpiHeadcount')),
+    ].join('');
+  }
+  function kpiCard(value, label){
+    return '<div class="kpi-card"><div class="kpi-value">'+value+'</div><div class="kpi-label">'+label+'</div></div>';
+  }
+
+  function renderOfficeTable(){
+    var tbody = document.getElementById('officeTbody');
+    var rows = OFFICE_ORDER.map(function(o){
+      var agg = officeAggregates(o.office);
+      return {o:o, agg:agg};
+    });
+
+    var key = state.officeSortKey, dir = state.officeSortDir === 'asc' ? 1 : -1;
+    function val(row){
+      switch(key){
+        case 'office': return row.o.office.toLowerCase();
+        case 'reps': return row.o.rep_count;
+        case 'conv': return row.agg.convPct === null ? -1 : row.agg.convPct;
+        case 'sales': return row.agg.sales === null ? -1 : row.agg.sales;
+        case 'hrsday': return row.o.avg_field_hrs_per_repday === null || row.o.avg_field_hrs_per_repday === undefined ? -1 : row.o.avg_field_hrs_per_repday;
+        case 'cancel': return row.agg.cancelPct === null ? -1 : row.agg.cancelPct;
+        case 'disc': return row.agg.discPct === null ? -1 : row.agg.discPct;
+        case 'pay': return row.o.owner_pay_total === null || row.o.owner_pay_total === undefined ? -1 : row.o.owner_pay_total;
+        case 'avgpay': return row.agg.avgRepPay === null ? -1 : row.agg.avgRepPay;
+        case 'ownerprod': return row.o.owner_personal_production === null || row.o.owner_personal_production === undefined ? -1 : row.o.owner_personal_production;
+        default: return 0;
+      }
+    }
+    rows.sort(function(a,b){
+      var av = val(a), bv = val(b);
+      if (typeof av === 'string' || typeof bv === 'string'){
+        return dir===1 ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+      }
+      return dir===1 ? (av - bv) : (bv - av);
+    });
+
+    tbody.innerHTML = rows.map(function(row){
+      var o = row.o, agg = row.agg;
+      var convCell;
+      if (agg.convPct===null){
+        convCell = '<span class="nodata-txt">'+t('noConvShort')+'</span>';
+      } else {
+        var color = o.target!=null ? (agg.convPct>=o.target?'green':(agg.convPct>=o.target-0.005?'yellow':'red')) : 'gray';
+        var targetTxt = o.target!=null ? ' <span style="color:var(--faint);font-weight:600;">/ '+pct(o.target,2)+' '+t('target').toLowerCase()+'</span>' : '';
+        convCell = '<span class="metric-pill '+color+'">'+pct(agg.convPct,2)+'</span>'+targetTxt;
+      }
+      var cancelCell = agg.cancelPct!==null ? '<span class="metric-pill '+cancelColor(agg.cancelPct)+'">'+pct(agg.cancelPct,1)+'</span>' : '<span class="nodata-txt">—</span>';
+      var discCell = agg.discPct!==null ? '<span class="metric-pill '+discColor(agg.discPct)+'">'+pct(agg.discPct,1)+'</span>' : '<span class="nodata-txt">—</span>';
+      var payCell = o.owner_pay_total!=null ? moneyRound(o.owner_pay_total) : '<span class="nodata-txt">—</span>';
+      var avgPayCell = agg.avgRepPay!=null ? money(agg.avgRepPay) : '<span class="nodata-txt">—</span>';
+      var ownerProdCell = (o.owner_personal_production!=null) ? money(o.owner_personal_production) : '<span class="nodata-txt">—</span>';
+      var salesCell = agg.sales!==null ? agg.sales : '<span class="nodata-txt">—</span>';
+      var hrsDayVal = o.avg_field_hrs_per_repday;
+      var hrsDayCell = (hrsDayVal!=null) ? '<span class="metric-pill '+hrsPerDayColor(hrsDayVal)+'">'+round1(hrsDayVal)+'</span>' : '<span class="nodata-txt">—</span>';
+
+      return '<tr data-office="'+escapeAttr(o.office)+'">' +
+        '<td><div class="office-name-cell"><span class="oname">'+o.office+'</span><span class="oprov">'+(o.province||'')+' · '+o.rep_count+' '+t('reps')+'</span></div></td>' +
+        '<td class="num">'+o.rep_count+'</td>' +
+        '<td class="num">'+convCell+'</td>' +
+        '<td class="num">'+salesCell+'</td>' +
+        '<td class="num">'+hrsDayCell+'</td>' +
+        '<td class="num">'+cancelCell+'</td>' +
+        '<td class="num">'+discCell+'</td>' +
+        '<td class="num">'+payCell+'</td>' +
+        '<td class="num">'+avgPayCell+'</td>' +
+        '<td class="num">'+ownerProdCell+'</td>' +
+      '</tr>';
+    }).join('');
+
+    Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function(tr){
+      tr.addEventListener('click', function(){
+        var office = tr.getAttribute('data-office');
+        state.office = (state.office===office) ? 'all' : office;
+        renderChips();
+        renderRepGrid();
+        document.getElementById('repsSection').scrollIntoView({behavior:'smooth', block:'start'});
+      });
+    });
+
+    updateSortHeaderUI();
+  }
+
+  function updateSortHeaderUI(){
+    Array.prototype.forEach.call(document.querySelectorAll('th.sortable'), function(th){
+      var k = th.getAttribute('data-sort');
+      th.classList.toggle('active', k===state.officeSortKey);
+      var arrow = th.querySelector('.arrow');
+      if (!arrow){
+        arrow = document.createElement('span');
+        arrow.className = 'arrow';
+        th.appendChild(arrow);
+      }
+      if (k===state.officeSortKey){
+        arrow.textContent = state.officeSortDir==='asc' ? '▲' : '▼';
+      } else {
+        arrow.textContent = '▼';
+      }
+    });
+  }
+
+  function renderChips(){
+    var el = document.getElementById('officeChips');
+    var chips = [{office:'all', label:t('allOffices'), count: MASTER.length}].concat(
+      OFFICE_ORDER.map(function(o){ return {office:o.office, label:o.office, count:o.rep_count}; })
+    );
+    el.innerHTML = chips.map(function(c){
+      var active = state.office===c.office ? ' active' : '';
+      return '<div class="chip'+active+'" data-office="'+escapeAttr(c.office)+'"><span class="chip-dot"></span>'+c.label+' <span class="chip-count">'+c.count+'</span></div>';
+    }).join('');
+    Array.prototype.forEach.call(el.querySelectorAll('.chip'), function(chip){
+      chip.addEventListener('click', function(){
+        state.office = chip.getAttribute('data-office');
+        renderChips();
+        renderRepGrid();
+      });
+    });
+  }
+
+  function escapeAttr(s){ return String(s).replace(/"/g,'&quot;'); }
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+  function metricBox(label, value, colorClass, sub){
+    return '<div class="metric-box">' +
+      '<div class="m-label">'+label+'</div>' +
+      '<div class="m-value '+(colorClass||'plain')+'">'+value+'</div>' +
+      (sub? '<div class="m-sub">'+sub+'</div>' : '') +
+    '</div>';
+  }
+
+  function renderRepCard(rep){
+    var badge = repBadge(rep);
+    var doorsPerDay = (rep.unique_doors!=null && rep.days_worked) ? rep.unique_doors/rep.days_worked : null;
+    var hrsPerDay = (rep.field_hours_week!=null && rep.days_worked) ? rep.field_hours_week/rep.days_worked : null;
+    var salesForCard = rep.has_conversion_data ? rep.conv_sales : rep.sales_week;
+    var salesPerDay = (salesForCard!=null && rep.days_worked) ? salesForCard/rep.days_worked : null;
+
+    var boxes = [];
+    if (rep.has_conversion_data){
+      boxes.push(metricBox(t('mSales'), salesForCard, salesColor(salesForCard)));
+      boxes.push(metricBox(t('mSalesPerDay'), salesPerDay!=null?round1(salesPerDay):'—', 'plain'));
+      boxes.push(metricBox('Conv %', pct(rep.conv_pct,2), conversionColor(rep)));
+      boxes.push(metricBox(t('mDoorsPerDay'), doorsPerDay!=null?Math.round(doorsPerDay):'—', doorsPerDayColor(doorsPerDay)));
+    } else {
+      boxes.push(metricBox(t('mSales'), rep.sales_week, 'plain', t('noConvShort')));
+      boxes.push(metricBox(t('mSalesPerDay'), salesPerDay!=null?round1(salesPerDay):'—', 'plain'));
+      boxes.push(metricBox('Conv %', '—', 'gray', t('noConvShort')));
+      boxes.push(metricBox(t('mDoorsPerDay'), '—', 'gray', t('noConvShort')));
+    }
+    boxes.push(metricBox(t('mHrsPerDay'), hrsPerDay!=null?round1(hrsPerDay):'—', hrsPerDayColor(hrsPerDay)));
+    boxes.push(metricBox(t('mDays'), rep.days_worked, daysWorkedColor(rep.days_worked)));
+    boxes.push(metricBox(t('mCancel'), rep.cancel_pct!=null?pct(rep.cancel_pct,1):'—', cancelColor(rep.cancel_pct)));
+    boxes.push(metricBox(t('mDisc'), rep.disconnect_pct!=null?pct(rep.disconnect_pct,1):'—', discColor(rep.disconnect_pct)));
+
+    return '<div class="rep-card b-'+badge.color+'">' +
+      '<div class="rep-card-head">' +
+        '<div><div class="rep-name">'+escapeHtml(rep.rep)+'</div><div class="rep-office">'+escapeHtml(rep.office)+'</div></div>' +
+        '<span class="badge '+badge.color+'">'+badge.label+'</span>' +
+      '</div>' +
+      '<div class="rep-metrics">'+boxes.join('')+'</div>' +
+      '<div class="rep-footer">' +
+        '<span class="pay-value">'+(rep.rep_pay!=null?money(rep.rep_pay):'—')+'</span>' +
+        '<span class="productmix-tag">'+t('mProductMix')+': '+t('productMixSoon')+'</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderRepGrid(){
+    var list = MASTER.slice();
+    if (state.office!=='all') list = list.filter(function(r){ return r.office===state.office; });
+    if (state.search){
+      var q = state.search.toLowerCase();
+      list = list.filter(function(r){ return r.rep.toLowerCase().indexOf(q)!==-1; });
+    }
+    list.sort(function(a,b){
+      switch(state.sort){
+        case 'sales_desc':
+          return (b.has_conversion_data?b.conv_sales:b.sales_week) - (a.has_conversion_data?a.conv_sales:a.sales_week);
+        case 'name_asc':
+          return a.rep.localeCompare(b.rep);
+        case 'pay_desc':
+          return (b.rep_pay||0) - (a.rep_pay||0);
+        case 'conv_desc':
+        default:
+          var av = a.has_conversion_data ? a.conv_pct : -1;
+          var bv = b.has_conversion_data ? b.conv_pct : -1;
+          return bv - av;
+      }
+    });
+    document.getElementById('repGrid').innerHTML = list.map(renderRepCard).join('');
+    document.getElementById('repCountSub').textContent = list.length + ' ' + t('repsShowing');
+  }
+
+  function applyI18n(){
+    document.documentElement.lang = state.lang;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function(el){
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-ph]'), function(el){
+      el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph')));
+    });
+    document.getElementById('rangeNote').textContent = state.range==='week' ? t('rangeNoteWeek') : t('rangeNoteOther');
+    var opts = document.getElementById('sortSelect').options;
+    opts[0].textContent = t('sortConvDesc');
+    opts[1].textContent = t('sortSalesDesc');
+    opts[2].textContent = t('sortNameAsc');
+    opts[3].textContent = t('sortPayDesc');
+  }
+
+  function fullRender(){
+    applyI18n();
+    renderHeroKpis();
+    renderOfficeTable();
+    renderChips();
+    renderRepGrid();
+  }
+
+  // ---------------- Event wiring ----------------
+  document.getElementById('langEnBtn').addEventListener('click', function(){
+    state.lang='en';
+    this.classList.add('active');
+    document.getElementById('langFrBtn').classList.remove('active');
+    fullRender();
+  });
+  document.getElementById('langFrBtn').addEventListener('click', function(){
+    state.lang='fr';
+    this.classList.add('active');
+    document.getElementById('langEnBtn').classList.remove('active');
+    fullRender();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('#dateSegment button'), function(btn){    btn.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('#dateSegment button'), function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      state.range = btn.getAttribute('data-range');
+      document.getElementById('rangeNote').textContent = state.range==='week' ? t('rangeNoteWeek') : t('rangeNoteOther');
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('th.sortable'), function(th){
+    th.addEventListener('click', function(){
+      var key = th.getAttribute('data-sort');
+      if (state.officeSortKey === key){
+        state.officeSortDir = state.officeSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.officeSortKey = key;
+        state.officeSortDir = (key === 'office') ? 'asc' : 'desc';
+      }
+      renderOfficeTable();
+    });
+  });
+
+  document.getElementById('repSearch').addEventListener('input', function(e){
+    state.search = e.target.value;
+    renderRepGrid();
+  });
+  document.getElementById('sortSelect').addEventListener('change', function(e){
+    state.sort = e.target.value;
+    renderRepGrid();
+  });
+
+  document.getElementById('footerRight').textContent = 'Generated ' + new Date().toLocaleDateString('en-CA');
+
+  fullRender();
+})();
+
+</script>
+</body>
+</html>
