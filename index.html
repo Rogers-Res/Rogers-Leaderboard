@@ -517,7 +517,7 @@
       var raw = window.localStorage && window.localStorage.getItem('rogersres_hidden_cols');
       if (raw) return new Set(JSON.parse(raw));
     } catch(e){}
-    return new Set();
+    return new Set(['disc', 'strokerep']); // default-hidden columns until the user changes them
   }
   function saveHiddenCols(){
     try { window.localStorage && window.localStorage.setItem('rogersres_hidden_cols', JSON.stringify(Array.from(state.hiddenCols))); } catch(e){}
